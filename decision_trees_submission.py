@@ -89,8 +89,24 @@ def build_decision_tree():
 
     decision_tree_root = None
 
-    # TODO: finish this.
-    raise NotImplemented()
+    A1 = DecisionNode(None,None,lambda a: a[0] == 0)
+    A2 = DecisionNode(None,None,lambda a: a[1] == 0)
+    A3 = DecisionNode(None,None,lambda a: a[2] == 0)
+    A4 = DecisionNode(None,None,lambda a: a[3] == 0)
+    C1 = DecisionNode(None,None,None,1)
+    C2 = DecisionNode(None,None,None,0)
+
+
+    A1.left = A4
+    A1.right = C1
+    A4.left = A3
+    A4.right = A2
+    A3.left = C1
+    A3.right = C2
+    A2.left = C1
+    A2.right = C2
+
+    decision_tree_root = A1
 
     return decision_tree_root
 
@@ -109,10 +125,25 @@ def confusion_matrix(classifier_output, true_labels):
     Returns:
         A two dimensional array representing the confusion matrix.
     """
+    tp = 0
+    fp = 0
+    tn = 0
+    fn = 0
 
-    # TODO: finish this.
-    raise NotImplemented()
-
+    for i in range(len(classifier_output)):
+        if(classifier_output[i]==0):
+            if(true_labels[i]==0):
+                tn +=1
+            else:
+                fn+=1
+        elif(classifier_output[i]==1):
+            if(true_labels[i]==1):
+                tp+=1
+            else:
+                fp+=1
+    
+    matrix = [ [tp,fn], [fp,tn] ]
+    return matrix
 
 def precision(classifier_output, true_labels):
     """Get the precision of a classifier compared to the correct values.
@@ -127,9 +158,11 @@ def precision(classifier_output, true_labels):
     Returns:
         The precision of the classifier output.
     """
+    cm = confusion_matrix(classifier_output,true_labels)
 
-    # TODO: finish this.
-    raise NotImplemented()
+    accuracy = cm[0][0]/(cm[0][0]+cm[1][0])
+
+    return accuracy
 
 
 def recall(classifier_output, true_labels):

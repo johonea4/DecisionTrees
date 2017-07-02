@@ -54,9 +54,9 @@ class DecisionTreePart1Tests(unittest.TestCase):
         answer = [1, 0, 0, 1, 0, 0, 0]
         true_label = [1, 1, 1, 0, 0, 0, 0]
         test_matrix = [[1, 2], [1, 3]]
+        confusion_matrix = dt.confusion_matrix(answer,true_label)
 
-        assert np.array_equal(test_matrix, dt.confusion_matrix(answer,
-                                                               true_label))
+        assert np.array_equal(test_matrix, confusion_matrix)
 
     def test_precision_calculation(self):
         """Test precision calculation.
@@ -71,8 +71,8 @@ class DecisionTreePart1Tests(unittest.TestCase):
         for index in range(0, len(answer)):
             answer[index] = 1
             precision = 1 / (1 + index)
-
-            assert dt.precision(answer, true_label) == precision
+            rslt = dt.precision(answer, true_label)
+            assert  rslt == precision
 
     def test_recall_calculation(self):
         """Test recall calculation.
