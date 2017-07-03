@@ -179,8 +179,11 @@ def recall(classifier_output, true_labels):
         The recall of the classifier output.
     """
 
-    # TODO: finish this.
-    raise NotImplemented()
+    cm = confusion_matrix(classifier_output,true_labels)
+
+    recall = cm[0][0]/(cm[0][0]+cm[0][1])
+
+    return recall
 
 
 def accuracy(classifier_output, true_labels):
@@ -197,9 +200,11 @@ def accuracy(classifier_output, true_labels):
         The accuracy of the classifier output.
     """
 
-    # TODO: finish this.
-    raise NotImplemented()
+    cm = confusion_matrix(classifier_output,true_labels)
 
+    accuracy = (cm[0][0]+cm[1][1])/(cm[0][0]+cm[0][1]+cm[1][0]+cm[1][1])
+
+    return accuracy
 
 def gini_impurity(class_vector):
     """Compute the gini impurity for a list of classes.

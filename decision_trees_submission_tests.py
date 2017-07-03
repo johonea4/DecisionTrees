@@ -88,8 +88,9 @@ class DecisionTreePart1Tests(unittest.TestCase):
         for index in range(0, len(answer)):
             answer[index] = 1
             recall = (index + 1) / ((index + 1) + (total_count - (index + 1)))
+            rslt = dt.recall(answer, true_label)
 
-            assert dt.recall(answer, true_label) == recall
+            assert rslt == recall
 
     def test_accuracy_calculation(self):
         """Test accuracy calculation.
@@ -105,8 +106,9 @@ class DecisionTreePart1Tests(unittest.TestCase):
         for index in range(0, len(answer)):
             answer[index] = 1
             accuracy = dt.accuracy(answer, true_label)
+            ans = ((index + 1) / total_count)
 
-            assert accuracy == ((index + 1) / total_count)
+            assert accuracy == ans
 
 
 class DecisionTreePart2Tests(unittest.TestCase):
