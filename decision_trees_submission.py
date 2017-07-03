@@ -250,7 +250,7 @@ def gini_gain(previous_classes, current_classes):
     summation = 0
 
     for c in current_classes:
-        summation += gini_impurity(c)
+        summation += (len(c)/nvals) * gini_impurity(c)
 
     gain = impurity - summation
 
