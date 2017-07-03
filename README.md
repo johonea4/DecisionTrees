@@ -21,7 +21,7 @@ Machine learning offers a number of methods for classifying data into discrete c
 
 
 ### Due Date
-This assignment is due in Bonnie on July 9th by 11:59PM UTC-12 (Anywhere on Earth). The deliverables for the assignment are:
+This assignment is due in Bonnie on July 13rd by 11:59PM UTC-12 (Anywhere on Earth). The deliverables for the assignment are:
 
 * All functions completed in **_decision_trees_submission.py_**
 

@@ -192,7 +192,7 @@ class DecisionTreePart2Tests(unittest.TestCase):
         gini_gain = dt.gini_gain([1, 1, 1, 0, 0, 0],
                                  [[1, 1, 0], [1, 0, 0]])
         
-        assert -0.389 == round(gini_gain, 3)
+        assert 0.056 == round(gini_gain, 3)
 
     def test_gini_gain_restaurant_patrons(self):
         """Test gini gain using restaurant patrons.
@@ -205,20 +205,20 @@ class DecisionTreePart2Tests(unittest.TestCase):
             self.restaurant['restaurants'],
             self.restaurant['split_patrons'])
 
-        assert round(gain_patrons, 3) == 0.056
+        assert round(gain_patrons, 3) == 0.278
 
     def test_gini_gain_restaurant_type(self):
         """Test gini gain using restaurant food type.
 
         Asserts:
-            gini gain is -1.5.
+            gini gain is 0.
         """
 
         gain_type = round(dt.gini_gain(
             self.restaurant['restaurants'],
             self.restaurant['split_food_type']), 2)
 
-        assert gain_type == -1.5
+        assert gain_type == 0.00
 
     def test_decision_tree_all_data(self):
         """Test decision tree classifies all data correctly.
