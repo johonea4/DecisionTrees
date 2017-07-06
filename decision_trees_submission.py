@@ -280,7 +280,64 @@ class DecisionTree:
             classes (list(int)): Available classes.
         """
 
-        self.root = self.__build_tree__(features, classes)
+        self.root = self.__build_tree__(features, classes)     
+
+    def testAllSame(self,classes):
+        test = classes[0]
+        for c in classes:
+            if c != test:
+                return None
+        return DecisionNode(None,None,None,test)
+
+    def testDepth(self,depth,numAttr,classes):
+        #if depth > self.depth_limit or depth >= numAttr:
+        if depth > self.depth_limit:
+            nt = classes.count(1)
+            nf = classes.count(0)
+            if nt>nf:
+                return DecisionNode(None,None,None,1)
+            elif nf>nt:
+                return DecisionNode(None,None,None,0)
+            else:
+                return DecisionNode(None,None,None,classes[0])
+        return None
+
+    def getThresh(self,arr):
+        return np.average(arr)
+        #return np.median(arr)
+
+    def getGains(self,features,classes,numAttr):
+        gains = list()
+        splitlist = list()
+
+        for i in range(numAttr):
+            attr = features[:,i]
+            # if attr[0]==None:
+            #     splitlist.append([list(),list()])
+            #     gains.append(-1)
+            #     continue
+            thresh = self.getThresh(attr)
+            pList = list()
+            nList = list()
+            for j in range(len(attr)):
+                if(attr[j]>=thresh):
+                    pList.append(classes[j])
+                else:
+                    nList.append(classes[j])
+            splitlist.append([pList,nList])
+            gains.append(gini_gain(classes,splitlist[i]))
+        alpha_max = max(gains)
+        alpha_index = gains.index(alpha_max)
+
+        results = dict()
+        results['gains'] = gains
+        results['split_classes'] = splitlist[alpha_index]
+        results['alpha_max'] = alpha_max
+        results['alpha_index'] = alpha_index
+        results['thresh'] = self.getThresh(features[:,alpha_index])
+        return results
+
+
 
     def __build_tree__(self, features, classes, depth=0):
         """Build tree that automatically finds the decision functions.
@@ -293,9 +350,38 @@ class DecisionTree:
         Returns:
             Root node of decision tree.
         """
+        #First Check if all classes are the same
+        test = self.testAllSame(classes)
+        if test != None:
+            return test
 
-        # TODO: finish this.
-        raise NotImplemented()
+        #Next Check if depth > depthLimit and return the most frequent class
+        numfeatures = np.size(features,0)
+        numattributes = np.size(features,1)
+
+        test = self.testDepth(depth,numattributes,classes)
+        if test != None:
+            return test
+        
+        #Get all the GiniGains for the features
+        results = self.getGains(features,classes,numattributes)
+        alpha_index = results['alpha_index']
+        thresh = results['thresh']
+        posFeatures = list()
+        negFeatures = list()
+        for i,f in enumerate(features):
+            if f[alpha_index]>=thresh:
+                posFeatures.append(list(f))
+                # posFeatures[len(posFeatures)-1][alpha_index] = None
+            else:
+                negFeatures.append(list(f))
+                # negFeatures[len(negFeatures)-1][alpha_index] = None
+        
+        node = DecisionNode(None,None,lambda feat: feat[alpha_index]>=thresh)
+        node.left = self.__build_tree__(np.array(posFeatures),results['split_classes'][0],depth+1)
+        node.right = self.__build_tree__(np.array(negFeatures),results['split_classes'][1],depth+1)
+
+        return node
 
     def classify(self, features):
         """Use the fitted tree to classify a list of example features.
@@ -309,8 +395,9 @@ class DecisionTree:
 
         class_labels = []
 
-        # TODO: finish this.
-        raise NotImplemented()
+        for feature in features:
+            class_labels.append(self.root.decide(feature))
+
         return class_labels
 
 
@@ -330,9 +417,26 @@ def generate_k_folds(dataset, k):
         List of folds.
     """
 
-    # TODO: finish this.
-    raise NotImplemented()
+    features,classes = dataset
+    setSize = len(classes)
 
+    numTest = setSize//k
+    numTraining = setSize - numTest
+
+    folds = list()
+    for i in range(k):
+        randomList = set()
+        while(len(randomList)<numTest): randomList.add(np.random.randint(0,setSize))
+        testFeatures = [ features[r] for r in randomList ]
+        testClasses = [ classes[r] for r in randomList ]
+        trainingFeatures = [ features[i] for i in range(setSize) if i not in randomList ]
+        trainingClasses = [ classes[i] for i in range(setSize) if i not in randomList ]
+
+        test = [np.array(testFeatures),np.array(testClasses)]
+        training = [np.array(trainingFeatures),np.array(trainingClasses)]
+        folds.append([training,test])
+
+    return folds
 
 class RandomForest:
     """Random forest classification."""

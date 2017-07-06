@@ -233,6 +233,15 @@ class DecisionTreePart2Tests(unittest.TestCase):
 
         assert cmp(output, self.train_classes) == 0
 
+    def test_k_folds_decision_tree(self):
+        folds = dt.generate_k_folds(self.dataset,20)
+        for fold in folds:
+            tree = dt.DecisionTree()
+            features,classes = fold[1]
+            tree.fit(features,classes)
+            testf,testc = fold[0]
+            output = tree.classify(testf)
+
     def test_k_folds_test_set_count(self):
         """Test k folds returns the correct test set size.
 
@@ -266,6 +275,51 @@ class DecisionTreePart2Tests(unittest.TestCase):
             training_set, test_set = fold
 
             assert len(training_set[0]) == training_set_count
+
+    def test_forest_all_data(self):
+        """Test random forest.
+        Asserts:
+            classification on average is >= 75%
+        """
+        # Values specified in the assignment
+        tree = dt.RandomForest(5, 5, .5, .5)
+        fold_count = 10
+        ten_folds = dt.generate_k_folds(self.dataset, fold_count)
+        avg_accuracy = 0.0
+
+        for fold in ten_folds:
+            training_set, test_set = fold
+            tree.fit(training_set[0], training_set[1])
+            output = tree.classify(test_set[0])
+            avg_accuracy += dt.accuracy(output, test_set[1])
+
+        avg_accuracy = avg_accuracy / fold_count
+        print '\n\nRandom Forest K-folds:', avg_accuracy
+        assert avg_accuracy >= .75
+
+    def test_challenge_all_data(self):
+        """Test challenge section.
+        Asserts:
+            classification on average is >= 80%
+        """
+        dataset = dt.load_csv('challenge_train.csv', 0)
+
+        #  Change as you see fit by adding parameters you have chosen or run
+        #  it with defaults
+        tree = dt.ChallengeClassifier()
+        fold_count = 10
+        ten_folds = dt.generate_k_folds(dataset, fold_count)
+        avg_accuracy = 0.0
+
+        for fold in ten_folds:
+            training_set, test_set = fold
+            tree.fit(training_set[0], training_set[1])
+            output = tree.classify(test_set[0])
+            avg_accuracy += dt.accuracy(output, test_set[1])
+
+        avg_accuracy = avg_accuracy / fold_count
+        print '\n\nChallenger K-folds:', avg_accuracy
+        assert avg_accuracy >= .80
 
 
 class VectorizationWarmUpTests(unittest.TestCase):
