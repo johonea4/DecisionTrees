@@ -225,6 +225,8 @@ def gini_impurity(class_vector):
     n0 = 0
     n1 = 0
 
+    if nvals <= 0: 
+        return 0
     for c in class_vector:
         if(c==0):
             n0+=1
@@ -246,6 +248,8 @@ def gini_gain(previous_classes, current_classes):
         Floating point number representing the information gain.
     """
     nvals = len(previous_classes)
+    if nvals <= 0:
+        return 0
     impurity = gini_impurity(previous_classes)
     summation = 0
 
@@ -312,10 +316,10 @@ class DecisionTree:
 
         for i in range(numAttr):
             attr = features[:,i]
-            # if attr[0]==None:
-            #     splitlist.append([list(),list()])
-            #     gains.append(-1)
-            #     continue
+            if attr[0]==None or np.isnan(attr[0]):
+                splitlist.append([list(),list()])
+                gains.append(-1)
+                continue
             thresh = self.getThresh(attr)
             pList = list()
             nList = list()
@@ -376,7 +380,11 @@ class DecisionTree:
             else:
                 negFeatures.append(list(f))
                 # negFeatures[len(negFeatures)-1][alpha_index] = None
-        
+        if len(results['split_classes'][0])<=0:
+            return self.testDepth(self.depth_limit+1,numattributes,results['split_classes'][1])
+        elif len(results['split_classes'][1])<=0:
+            return self.testDepth(self.depth_limit+1,numattributes,results['split_classes'][0])
+
         node = DecisionNode(None,None,lambda feat: feat[alpha_index]>=thresh)
         node.left = self.__build_tree__(np.array(posFeatures),results['split_classes'][0],depth+1)
         node.right = self.__build_tree__(np.array(negFeatures),results['split_classes'][1],depth+1)
@@ -458,15 +466,39 @@ class RandomForest:
         self.example_subsample_rate = example_subsample_rate
         self.attr_subsample_rate = attr_subsample_rate
 
+    def getForest(self,features,classes):
+        numFeatures = np.size(features,0)
+        numAttr = np.size(features,1)
+        numSubFeatures = int(self.example_subsample_rate * numFeatures)
+        numSubAttr = int(self.attr_subsample_rate * numAttr)
+
+        randomFeatures = set()
+        randomAttr = set()
+        while len(randomFeatures) < numSubFeatures: randomFeatures.add(np.random.randint(0,numFeatures))
+        while len (randomAttr) < numSubAttr: randomAttr.add(np.random.randint(0,numAttr))
+        subFeatures = [ features[r] for r in randomFeatures ]
+        subClasses = [ classes[r] for r in randomFeatures ]
+
+        return [np.array(subFeatures),np.array(subClasses),randomAttr]
+
     def fit(self, features, classes):
         """Build a random forest of decision trees using Bootstrap Aggregation.
 
             features (list(list(int)): List of features.
             classes (list(int)): Available classes.
         """
-
-        # TODO: finish this.
-        raise NotImplemented()
+        numFeatures = np.size(features,0)
+        numAttr = np.size(features,1)
+        
+        for i in range(self.num_trees):
+            forest = self.getForest(features,classes)
+            for f in forest[0]:
+                for j in range(numAttr):
+                    if j not in forest[2]:
+                        f[j] = None
+            tree = DecisionTree(self.depth_limit)
+            tree.fit(forest[0],forest[1])
+            self.trees.append(tree)
 
     def classify(self, features):
         """Classify a list of features based on the trained random forest.
@@ -475,9 +507,27 @@ class RandomForest:
             features (list(list(int)): List of features.
         """
 
-        # TODO: finish this.
-        raise NotImplemented()
+        classList = list()
+        test = list()
+        numFeatures = np.size(features,0)
 
+        for tree in self.trees:
+            c = tree.classify(features)
+            test.append(c)
+        test = np.array(test)
+        for i in range(numFeatures):
+            f = list(test[:,i])
+            nf = f.count(0)
+            nt = f.count(1)
+            if nt > nf:
+                classList.append(1)
+            elif nf > nt:
+                classList.append(0)
+            else:
+                classList.append(f[0])
+
+
+        return classList
 
 class ChallengeClassifier:
     """Challenge Classifier used on Challenge Training Data."""
@@ -490,8 +540,11 @@ class ChallengeClassifier:
         defaults.
         """
 
-        # TODO: finish this.
-        raise NotImplemented()
+        self.num_trees = 20
+        self.depth_limit_multiplier = 2
+        self.subfeature_rate = 0.10
+        self.subattr_rate = 0.25
+        self.forest = None
 
     def fit(self, features, classes):
         """Build the underlying tree(s).
@@ -502,9 +555,10 @@ class ChallengeClassifier:
             features (list(list(int)): List of features.
             classes (list(int)): Available classes.
         """
-
-        # TODO: finish this.
-        raise NotImplemented()
+        numAttr = np.size(features,1)
+        depth_limit = int(numAttr*self.depth_limit_multiplier)
+        self.forest = RandomForest(self.num_trees,depth_limit,self.subfeature_rate,self.subattr_rate)
+        self.forest.fit(features,classes)
 
     def classify(self, features):
         """Classify a list of features.
@@ -517,9 +571,8 @@ class ChallengeClassifier:
         Returns:
             A list of class labels.
         """
-
-        # TODO: finish this.
-        raise NotImplemented()
+        return self.forest.classify(features)
+        
 
 
 class Vectorization:
