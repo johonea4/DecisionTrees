@@ -615,9 +615,9 @@ class Vectorization:
         Returns:
             Numpy array of data.
         """
-
-        # TODO: finish this.
-        raise NotImplemented()
+        d = np.multiply(data,data)
+        d = np.add(d,data)
+        return d
 
     def non_vectorized_slice(self, data):
         """Find row with max sum using loops.
@@ -659,9 +659,14 @@ class Vectorization:
         Returns:
             Tuple (Max row sum, index of row with max sum)
         """
+        d = []
+        for row in range(100):
+            d.append(np.sum(data[row]))
+        
+        m = np.max(d)
+        i = d.index(m)
 
-        # TODO: finish this.
-        raise NotImplemented()
+        return tuple([m,i])
 
     def non_vectorized_flatten(self, data):
         """Display occurrences of positive numbers using loops.
@@ -706,5 +711,12 @@ class Vectorization:
             List of occurrences [(integer, number of occurrences), ...]
         """
 
-        # TODO: finish this.
-        raise NotImplemented()
+        d = np.array(data)
+        d = d.flatten()
+        d = d[ d > 0 ]
+
+        nums, counts = np.lib.arraysetops.unique(d,return_counts=True)
+        rslt = list(zip(nums,counts))
+
+        return rslt
+        
